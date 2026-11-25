@@ -53,6 +53,17 @@ defmodule Cucumber do
   once around all attempts, so put per-attempt setup in `before_scenario`
   hooks.
 
+  Setting `step_wrapper: {MyApp.CucumberSteps, :wrap}` calls
+  `MyApp.CucumberSteps.wrap(step, context, run)` around every executed
+  step, e.g. to run it inside a tracer's own step. `run` runs the step and
+  returns the updated context, or
+  `{:halted, :pending | :skipped, reason, context}`; a failing step raises
+  out of it. Call `run` exactly once, in the wrapper's own process; the
+  wrapper's return value is ignored, and a wrapper that breaks this fails
+  the step with `Cucumber.StepWrapperError` (never retried; a raise from
+  the wrapper itself is retried like its cause would be). See "Step Wrapper" in the
+  Hooks guide.
+
   ## Step Definitions
 
   Create step definition modules using `Cucumber.StepDefinition`:
@@ -106,6 +117,9 @@ defmodule Cucumber do
       `ExUnit.Case` (see "Configuration" in the `Cucumber` module docs).
       Overrides `config :cucumber, case_template: ...`; `nil` uses
       `ExUnit.Case`
+    * `:step_wrapper` - `{module, function}` wrapping each step of these
+      features (see "Step Wrapper" in the Hooks guide). Overrides
+      `config :cucumber, step_wrapper: ...`; `nil` wraps no steps.
 
   ## Examples
 

@@ -144,6 +144,8 @@ defmodule Cucumber.BehaviorCase do
       flushed when the nested run finishes
     * `:case_template` - the module generated test modules `use` instead of
       `ExUnit.Case` (mirroring `config :cucumber, case_template: module`)
+    * `:step_wrapper` - the step wrapper (mirroring the
+      `Cucumber.compile_features!/1` option; the app env is the fallback)
     * `:seed` - seed for the nested run (`0` runs scenarios in definition
       order — required when asserting on cross-scenario ordering, e.g.
       comparing message streams); defaults to the outer suite's seed
@@ -209,7 +211,11 @@ defmodule Cucumber.BehaviorCase do
         registry,
         hook_modules,
         opts[:messages],
-        Keyword.take(opts, [:case_template])
+        opts
+        |> Keyword.take([:case_template])
+        |> Keyword.put_new_lazy(:step_wrapper, fn ->
+          Application.get_env(:cucumber, :step_wrapper)
+        end)
       )
 
     {result, output} = run_isolated(modules, Keyword.take(opts, [:seed]))
